@@ -1,7 +1,7 @@
 # Reasonable defaults for all classes
 class r10k::params
 {
-  $version           = '1.0.0'
+  $version           = '0.0.9'
   $manage_modulepath = false
 
   # r10k configuration
@@ -16,7 +16,8 @@ class r10k::params
   $remote              = "ssh://${git_server}${repo_path}/modules.git"
 
   # prerun_command in puppet.conf
-  $prerun_command = 'r10k deploy environment -p'
+  #$prerun_command = 'r10k deploy environment -p'
+  $prerun_command = 'r10k sync'
 
   # Bundle to get bleeding edge instead of gem
   $use_bundle          = false
