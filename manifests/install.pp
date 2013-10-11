@@ -21,11 +21,20 @@ class r10k::install (
     class { 'r10k::install::ruby': version => $version; }
   }
 
+  File {
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+
   if ! $r10k::install::use_bundle {
     package { 'r10k':
       ensure   => $version,
       provider => $provider,
+      before   => File['/usr/bin/r10k.sh'],
     }
+
   } else {
     # The bundle install has prefix support as of writing this, I want bleeding edge.
     class { 'git': }
@@ -48,6 +57,19 @@ class r10k::install (
       require => [ Package["${module_name}-bundle"] , Vcsrepo["${module_name}-r10k-github"] ],
       unless  => 'bundle list | grep -q " r10k "',
       path    => '/usr/bin:/usr/local/bin:/usr/sbin:/usr/local/sbin:/sbin:/bin',
+      before  => File['/usr/bin/r10k.sh'],
     }
+  }
+
+  # create a wrapper script for r10k which sets the umask under which git will operate
+  # these are chained after deployment of the package/bundle
+  file { '/tmp/r10k.sh':
+    source => "puppet://modules/${module_name}/r10k.sh",
+  } ->
+  exec { '/bin/cp -f /usr/bin/r10k /usr/bin/r10k.ruby':
+    onlyif => '/usr/bin/ruby -c /usr/bin/r10k',
+  } ->
+  file { '/usr/bin/r10k':
+    source => "/tmp/r10k.sh",
   }
 }
