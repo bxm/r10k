@@ -3,4 +3,4 @@
 
 umask 022
 
-/usr/bin/r10k $@
+/usr/bin/r10k.ruby $@
